@@ -1,0 +1,36 @@
+---
+- name: install of node-exporter
+  hosts: localhost
+  tasks:
+    - name: Download file from a file path
+      get_url:
+        url: https://www.apache.org/dyn/closer.cgi?filename=activemq/activemq-artemis/2.12.0/apache-artemis-2.12.0-bin.tar.gz&action=download
+        dest: /tmp/apache-artemis-2.12.0-bin.tar.gz
+
+    - name: extarct pckage 
+      unarchive:
+        src: /tmp/apache-artemis-2.12.0-bin.tar.gz
+        dest: /tmp/
+
+    - name: Create broker
+      expect:
+        command: /tmp/apache-artemis-2.13.0/bin/artemis create /tmp/brokers/ansible-broker --name ansible-broker --user admin --password admin --allow-anonymous
+
+    - name: configure bootstrap.xml
+      template:
+        src: bootstrap.xml
+        dest: /tmp/brokers/ansible-broker/etc/bootstrap.xml
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: configure jolokia-access.xml
+      template:
+        src: bootstrap.xml
+        dest: /tmp/brokers/ansible-broker/etc/jolokia-access.xml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: run broker
+      command: /tmp/brokers/ansible-broker/artemis-service start
